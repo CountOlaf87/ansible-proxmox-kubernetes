@@ -1,0 +1,19 @@
+- hosts: proxmox # run on the "all" hosts category from ansible-hosts.txt
+  # become means be superuser
+  become: true
+  remote_user: root
+  tasks:
+  - name: Use qm list and awk to get all running vmids
+    ansible.builtin.shell: qm list | awk '$3 == "running" { print $1 }'
+    register: running_vmids
+    failed_when: running_vmids.stderr
+  - name: Print
+    debug:
+      msg: "{{ running_vmids.stdout_lines }}"
+  - name: Snapshot each running VM
+    ansible.builtin.command: "qm snapshot {{ item }} before_install"
+    with_items:
+      - "201"
+      - "301"
+      - "302"
+      - "401"
